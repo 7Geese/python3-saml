@@ -92,6 +92,7 @@ class OneLogin_Saml2_Response(object):
 
             idp_data = self.__settings.get_idp_data()
             idp_entity_id = idp_data['entityId']
+            idp_issuer = idp_data.get('issuer', idp_entity_id)
             sp_data = self.__settings.get_sp_data()
             sp_entity_id = sp_data['entityId']
 
@@ -204,7 +205,7 @@ class OneLogin_Saml2_Response(object):
                 # Checks the issuers
                 issuers = self.get_issuers()
                 for issuer in issuers:
-                    if issuer is None or issuer != idp_entity_id:
+                    if issuer is None or issuer != idp_issuer:
                         raise OneLogin_Saml2_ValidationError(
                             'Invalid issuer in the Assertion/Response',
                             OneLogin_Saml2_ValidationError.WRONG_ISSUER
