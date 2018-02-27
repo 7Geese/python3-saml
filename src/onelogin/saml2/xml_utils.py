@@ -30,7 +30,6 @@ class OneLogin_Saml2_XML(object):
     dump = staticmethod(etree.dump)
     make_root = staticmethod(etree.Element)
     make_child = staticmethod(etree.SubElement)
-    cleanup_namespaces = staticmethod(etree.cleanup_namespaces)
 
     @staticmethod
     def to_string(xml, **kwargs):
@@ -124,6 +123,28 @@ class OneLogin_Saml2_XML(object):
             return context.xpath(query, namespaces=OneLogin_Saml2_Constants.NSMAP)
 
     @staticmethod
+    def cleanup_namespaces(tree_or_element, top_nsmap=None, keep_ns_prefixes=None):
+        """
+        Keeps the xmlns:xs namespace intact when etree.cleanup_namespaces is invoked.
+        :param tree_or_element: An XML tree or element
+        :type tree_or_element: etree.Element
+        :param top_nsmap: A mapping from namespace prefixes to namespace URIs
+        :type top_nsmap: dict
+        :param keep_ns_prefixes: List of prefixes that should not be removed as part of the cleanup
+        :type keep_ns_prefixes: list
+        :returns: An XML tree or element
+        :rtype: etree.Element
+        """
+        all_prefixes_to_keep = [
+            OneLogin_Saml2_Constants.NS_PREFIX_XS
+        ]
+
+        if keep_ns_prefixes:
+            all_prefixes_to_keep = list(set(all_prefixes_to_keep.extend(keep_ns_prefixes)))
+
+        return etree.cleanup_namespaces(tree_or_element, keep_ns_prefixes=all_prefixes_to_keep)
+
+    @staticmethod
     def extract_tag_text(xml, tagname):
         open_tag = compat.to_bytes("<%s" % tagname)
         close_tag = compat.to_bytes("</%s>" % tagname)
@@ -135,3 +156,8 @@ class OneLogin_Saml2_XML(object):
         end = xml.find(close_tag, start) + len(close_tag)
         assert end != -1
         return compat.to_string(xml[start:end])
+
+    @staticmethod
+    def element_text(node):
+        etree.strip_tags(node, etree.Comment)
+        return node.text
