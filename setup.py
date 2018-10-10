@@ -1,15 +1,15 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2014, OneLogin, Inc.
-# All rights reserved.
+# Copyright (c) 2010-2018 OneLogin, Inc.
+# MIT License
 
 from setuptools import setup
 
 
 setup(
     name='python3-saml',
-    version='1.4.0',
+    version='1.4.1',
     description='Onelogin Python Toolkit. Add SAML support to your Python software using this library',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -17,7 +17,9 @@ setup(
         'Intended Audience :: System Administrators',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     author='OneLogin',
     author_email='support@onelogin.com',
@@ -40,12 +42,12 @@ setup(
     dependency_links=['http://github.com/mehcode/python-xmlsec/tarball/master'],
     extras_require={
         'test': (
-            'coverage==3.7.1',
+            'coverage>=3.6',
             'freezegun==0.3.5',
             'pylint==1.3.1',
             'pep8==1.5.7',
             'pyflakes==0.8.1',
-            'coveralls==0.4.4',
+            'coveralls==1.1',
         ),
     },
     keywords='saml saml2 xmlsec django flask pyramid python3',
