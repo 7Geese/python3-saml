@@ -77,7 +77,7 @@ class OneLogin_Saml2_Logout_Response_Test(unittest.TestCase):
 
         logout_url = OneLogin_Saml2_Utils.redirect('http://idp.example.com/SingleLogoutService.php', parameters, True)
 
-        self.assertRegex(logout_url, '^http://idp\.example\.com\/SingleLogoutService\.php\?SAMLResponse=')
+        self.assertRegex(logout_url, r'^http://idp\.example\.com\/SingleLogoutService\.php\?SAMLResponse=')
         url_parts = urlparse(logout_url)
         exploded = parse_qs(url_parts.query)
         inflated = compat.to_string(OneLogin_Saml2_Utils.decode_base64_and_inflate(exploded['SAMLResponse'][0]))
@@ -208,7 +208,7 @@ class OneLogin_Saml2_Logout_Response_Test(unittest.TestCase):
 
         settings.set_strict(True)
         response_2 = OneLogin_Saml2_Logout_Response(settings, message)
-        with self.assertRaisesRegex(Exception, 'Invalid issuer in the Logout Request'):
+        with self.assertRaisesRegex(Exception, 'Invalid issuer in the Logout Response'):
             response_2.is_valid(request_data, raise_exceptions=True)
 
     def testIsInValidDestination(self):
@@ -259,6 +259,34 @@ class OneLogin_Saml2_Logout_Response_Test(unittest.TestCase):
         }
         settings = OneLogin_Saml2_Settings(self.loadSettingsJSON())
         message = self.file_contents(join(self.data_path, 'logout_responses', 'logout_response_deflated.xml.base64'))
+
+        response = OneLogin_Saml2_Logout_Response(settings, message)
+        self.assertTrue(response.is_valid(request_data))
+
+        settings.set_strict(True)
+        response_2 = OneLogin_Saml2_Logout_Response(settings, message)
+        with self.assertRaisesRegex(Exception, 'The LogoutResponse was received at'):
+            response_2.is_valid(request_data, raise_exceptions=True)
+
+        plain_message = compat.to_string(OneLogin_Saml2_Utils.decode_base64_and_inflate(message))
+        current_url = OneLogin_Saml2_Utils.get_self_url_no_query(request_data)
+        plain_message = plain_message.replace('http://stuff.com/endpoints/endpoints/sls.php', current_url)
+        message_3 = OneLogin_Saml2_Utils.deflate_and_base64_encode(plain_message)
+
+        response_3 = OneLogin_Saml2_Logout_Response(settings, message_3)
+        self.assertTrue(response_3.is_valid(request_data))
+
+    def testIsValidWithXMLEncoding(self):
+        """
+        Tests the is_valid method of the OneLogin_Saml2_LogoutResponse
+        """
+        request_data = {
+            'http_host': 'example.com',
+            'script_name': 'index.html',
+            'get_data': {}
+        }
+        settings = OneLogin_Saml2_Settings(self.loadSettingsJSON())
+        message = self.file_contents(join(self.data_path, 'logout_responses', 'logout_response_with_encoding_deflated.xml.base64'))
 
         response = OneLogin_Saml2_Logout_Response(settings, message)
         self.assertTrue(response.is_valid(request_data))

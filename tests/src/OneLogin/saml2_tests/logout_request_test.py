@@ -65,7 +65,7 @@ class OneLogin_Saml2_Logout_Request_Test(unittest.TestCase):
 
         parameters = {'SAMLRequest': logout_request.get_request()}
         logout_url = OneLogin_Saml2_Utils.redirect('http://idp.example.com/SingleLogoutService.php', parameters, True)
-        self.assertRegex(logout_url, '^http://idp\.example\.com\/SingleLogoutService\.php\?SAMLRequest=')
+        self.assertRegex(logout_url, r'^http://idp\.example\.com\/SingleLogoutService\.php\?SAMLRequest=')
         url_parts = urlparse(logout_url)
         exploded = parse_qs(url_parts.query)
         payload = exploded['SAMLRequest'][0]
@@ -82,7 +82,7 @@ class OneLogin_Saml2_Logout_Request_Test(unittest.TestCase):
 
         parameters = {'SAMLRequest': logout_request.get_request()}
         logout_url = OneLogin_Saml2_Utils.redirect('http://idp.example.com/SingleLogoutService.php', parameters, True)
-        self.assertRegex(logout_url, '^http://idp\.example\.com\/SingleLogoutService\.php\?SAMLRequest=')
+        self.assertRegex(logout_url, r'^http://idp\.example\.com\/SingleLogoutService\.php\?SAMLRequest=')
         url_parts = urlparse(logout_url)
         exploded = parse_qs(url_parts.query)
         payload = exploded['SAMLRequest'][0]
@@ -139,7 +139,7 @@ class OneLogin_Saml2_Logout_Request_Test(unittest.TestCase):
 
         parameters = {'SAMLRequest': logout_request.get_request()}
         logout_url = OneLogin_Saml2_Utils.redirect('http://idp.example.com/SingleLogoutService.php', parameters, True)
-        self.assertRegex(logout_url, '^http://idp\.example\.com\/SingleLogoutService\.php\?SAMLRequest=')
+        self.assertRegex(logout_url, r'^http://idp\.example\.com\/SingleLogoutService\.php\?SAMLRequest=')
         url_parts = urlparse(logout_url)
         exploded = parse_qs(url_parts.query)
         payload = exploded['SAMLRequest'][0]
@@ -391,6 +391,38 @@ class OneLogin_Saml2_Logout_Request_Test(unittest.TestCase):
             'script_name': 'index.html'
         }
         request = self.file_contents(join(self.data_path, 'logout_requests', 'logout_request.xml'))
+        settings = OneLogin_Saml2_Settings(self.loadSettingsJSON())
+
+        logout_request = OneLogin_Saml2_Logout_Request(settings, OneLogin_Saml2_Utils.b64encode(request))
+        self.assertTrue(logout_request.is_valid(request_data))
+
+        settings.set_strict(True)
+        logout_request2 = OneLogin_Saml2_Logout_Request(settings, OneLogin_Saml2_Utils.b64encode(request))
+        self.assertFalse(logout_request2.is_valid(request_data))
+
+        settings.set_strict(False)
+        dom = parseString(request)
+        logout_request3 = OneLogin_Saml2_Logout_Request(settings, OneLogin_Saml2_Utils.b64encode(dom.toxml()))
+        self.assertTrue(logout_request3.is_valid(request_data))
+
+        settings.set_strict(True)
+        logout_request4 = OneLogin_Saml2_Logout_Request(settings, OneLogin_Saml2_Utils.b64encode(dom.toxml()))
+        self.assertFalse(logout_request4.is_valid(request_data))
+
+        current_url = OneLogin_Saml2_Utils.get_self_url_no_query(request_data)
+        request = request.replace('http://stuff.com/endpoints/endpoints/sls.php', current_url)
+        logout_request5 = OneLogin_Saml2_Logout_Request(settings, OneLogin_Saml2_Utils.b64encode(request))
+        self.assertTrue(logout_request5.is_valid(request_data))
+
+    def testIsValidWithXMLEncoding(self):
+        """
+        Tests the is_valid method of the OneLogin_Saml2_LogoutRequest
+        """
+        request_data = {
+            'http_host': 'example.com',
+            'script_name': 'index.html'
+        }
+        request = self.file_contents(join(self.data_path, 'logout_requests', 'logout_request_with_encoding.xml'))
         settings = OneLogin_Saml2_Settings(self.loadSettingsJSON())
 
         logout_request = OneLogin_Saml2_Logout_Request(settings, OneLogin_Saml2_Utils.b64encode(request))

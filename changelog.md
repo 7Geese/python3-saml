@@ -1,4 +1,19 @@
 # python3-saml changelog
+### 1.6.0 (Apr 10, 2019)
+* Add support for Subjects on AuthNRequests by the new name_id_value_req parameter
+* [#127](https://github.com/onelogin/python3-saml/pull/127) Fix for SLO when XML specifies encoding
+* [#126](https://github.com/onelogin/python3-saml/pull/126) Fixed setting NameFormat attribute for AttributeValue tags
+
+### 1.5.0 (Jan 29, 2019)
+* Security improvements. Use of tagid to prevent XPath injection. Disable DTD on fromstring defusedxml method
+* [#97](https://github.com/onelogin/python3-saml/pull/97) Check that the response has all of the AuthnContexts that we provided
+* Adapt renders from Django demo for Django 1.11 version
+* Update pylint dependency to 1.9.1
+* If debug enable, print reason for the SAMLResponse invalidation
+* Fix DSA constant
+* [#106](https://github.com/onelogin/python3-saml/pull/106) Support NameID children inside of AttributeValue elements
+* Start using flake8 for code quality
+
 ### 1.4.1 (Apr 25, 2018)
 * Add ID to EntityDescriptor before sign it on add_sign method.
 * Update defusedxml, coveralls and coverage dependencies

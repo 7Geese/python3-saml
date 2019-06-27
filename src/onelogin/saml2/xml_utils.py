@@ -25,6 +25,7 @@ class OneLogin_Saml2_XML(object):
     _parse_etree = staticmethod(fromstring)
     _schema_class = etree.XMLSchema
     _text_class = compat.text_types
+    _bytes_class = compat.bytes_type
     _unparse_etree = staticmethod(tostring)
 
     dump = staticmethod(etree.dump)
@@ -61,8 +62,10 @@ class OneLogin_Saml2_XML(object):
         """
         if isinstance(xml, OneLogin_Saml2_XML._element_class):
             return xml
+        if isinstance(xml, OneLogin_Saml2_XML._bytes_class):
+            return OneLogin_Saml2_XML._parse_etree(xml, forbid_dtd=True)
         if isinstance(xml, OneLogin_Saml2_XML._text_class):
-            return OneLogin_Saml2_XML._parse_etree(xml)
+            return OneLogin_Saml2_XML._parse_etree(compat.to_bytes(xml), forbid_dtd=True)
 
         raise ValueError('unsupported type %r' % type(xml))
 
@@ -101,7 +104,7 @@ class OneLogin_Saml2_XML(object):
         return xml
 
     @staticmethod
-    def query(dom, query, context=None):
+    def query(dom, query, context=None, tagid=None):
         """
         Extracts nodes that match the query from the Element
 
@@ -114,13 +117,21 @@ class OneLogin_Saml2_XML(object):
         :param context: Context Node
         :type: DOMElement
 
+        :param tagid: Tag ID
+        :type query: String
+
         :returns: The queried nodes
         :rtype: list
         """
         if context is None:
-            return dom.xpath(query, namespaces=OneLogin_Saml2_Constants.NSMAP)
+            source = dom
         else:
-            return context.xpath(query, namespaces=OneLogin_Saml2_Constants.NSMAP)
+            source = context
+
+        if tagid is None:
+            return source.xpath(query, namespaces=OneLogin_Saml2_Constants.NSMAP)
+        else:
+            return source.xpath(query, tagid=tagid, namespaces=OneLogin_Saml2_Constants.NSMAP)
 
     @staticmethod
     def cleanup_namespaces(tree_or_element, top_nsmap=None, keep_ns_prefixes=None):

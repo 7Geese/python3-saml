@@ -63,6 +63,7 @@ class OneLogin_Saml2_Auth(object):
         self.__last_request_id = None
         self.__last_message_id = None
         self.__last_assertion_id = None
+        self.__last_authn_contexts = []
         self.__last_request = None
         self.__last_response = None
         self.__last_assertion_not_on_or_after = None
@@ -110,6 +111,7 @@ class OneLogin_Saml2_Auth(object):
                 self.__session_expiration = response.get_session_not_on_or_after()
                 self.__last_message_id = response.get_id()
                 self.__last_assertion_id = response.get_assertion_id()
+                self.__last_authn_contexts = response.get_authn_contexts()
                 self.__authenticated = True
                 self.__last_assertion_not_on_or_after = response.get_assertion_not_on_or_after()
 
@@ -318,7 +320,14 @@ class OneLogin_Saml2_Auth(object):
         """
         return self.__last_assertion_id
 
-    def login(self, return_to=None, force_authn=False, is_passive=False, set_nameid_policy=True):
+    def get_last_authn_contexts(self):
+        """
+        :returns: The list of authentication contexts sent in the last SAML Response.
+        :rtype: list
+        """
+        return self.__last_authn_contexts
+
+    def login(self, return_to=None, force_authn=False, is_passive=False, set_nameid_policy=True, name_id_value_req=None):
         """
         Initiates the SSO process.
 
@@ -334,10 +343,13 @@ class OneLogin_Saml2_Auth(object):
         :param set_nameid_policy: Optional argument. When true the AuthNRequest will set a nameIdPolicy element.
         :type set_nameid_policy: bool
 
+        :param name_id_value_req: Optional argument. Indicates to the IdP the subject that should be authenticated
+        :type name_id_value_req: string
+
         :returns: Redirection URL
         :rtype: string
         """
-        authn_request = OneLogin_Saml2_Authn_Request(self.__settings, force_authn, is_passive, set_nameid_policy)
+        authn_request = OneLogin_Saml2_Authn_Request(self.__settings, force_authn, is_passive, set_nameid_policy, name_id_value_req)
         self.__last_request = authn_request.get_xml()
         self.__last_request_id = authn_request.get_id()
 
