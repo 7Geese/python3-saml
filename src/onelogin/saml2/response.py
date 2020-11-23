@@ -216,7 +216,7 @@ class OneLogin_Saml2_Response(object):
                 # Checks the issuers
                 issuers = self.get_issuers()
                 for issuer in issuers:
-                    if issuer is None or issuer != idp_entity_id:
+                    if issuer is None or issuer != idp_data.get('issuer', idp_entity_id):
                         raise OneLogin_Saml2_ValidationError(
                             'Invalid issuer in the Assertion/Response (expected %(idpEntityId)s, got %(issuer)s)' %
                             {
